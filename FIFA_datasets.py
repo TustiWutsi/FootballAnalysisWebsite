@@ -214,23 +214,24 @@ clubs_all_years = [club_level_15, club_level_16, club_level_17, club_level_18, c
 clubs = reduce(lambda  left,right: pd.merge(left,right,on=['league_name','club_name'],
                                             how='outer'), clubs_all_years)
 
+#clubs level 
 column_value = ['value_eur_15','value_eur_16','value_eur_17','value_eur_18','value_eur_19','value_eur_20', 'value_eur_21']
 
 for i in column_value:
     clubs[i] = clubs.apply(lambda x: "{:,}".format(x[i]), axis=1)
 
 clubs_level = clubs.drop(columns=column_value)
-
 clubs_level = clubs_level.rename(columns = {'overall_15' : 2015, 'overall_16' : 2016, 'overall_17' : 2017, 'overall_18' : 2018, 'overall_19' : 2019, 'overall_20' : 2020, 'overall_21' : 2021})
+clubs_level = clubs_level.melt(['league_name','club_name'], var_name='year').rename(columns = {'value':'team_level'})
 
+#clubs value
 column_overall = ['overall_15', 'overall_16', 'overall_17', 'overall_18', 'overall_19', 'overall_20', 'overall_21']
 
 clubs_value = clubs.drop(columns=column_overall)
 clubs_value = clubs_value.rename(columns = {'value_eur_15' : 2015, 'value_eur_16' : 2016, 'value_eur_17' : 2017, 'value_eur_18' : 2018, 'value_eur_19' : 2019, 'value_eur_20' : 2020, 'value_eur_21' : 2021})
 clubs_value = clubs_value.melt(['league_name','club_name'], var_name='year').rename(columns = {'value':'team_value'})
 
+#gathering clubs level and value datasets
 clubs_df = [clubs_level, clubs_value]
-
-#clubs_vf = reduce(lambda  left,right: pd.merge(left,right,on=['league_name', 'club_name', 'year'],
-                                            #how='outer'), clubs_df)
+clubs_vf = reduce(lambda  left,right: pd.merge(left,right,on=['league_name', 'club_name', 'year'], how='outer'), clubs_df)
 
