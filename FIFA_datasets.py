@@ -231,7 +231,32 @@ clubs_value = clubs.drop(columns=column_overall)
 clubs_value = clubs_value.rename(columns = {'value_eur_15' : 2015, 'value_eur_16' : 2016, 'value_eur_17' : 2017, 'value_eur_18' : 2018, 'value_eur_19' : 2019, 'value_eur_20' : 2020, 'value_eur_21' : 2021})
 clubs_value = clubs_value.melt(['league_name','club_name'], var_name='year').rename(columns = {'value':'team_value'})
 
+#clubs wages
+#TO BE ADDED
+
 #gathering clubs level and value datasets
 clubs_df = [clubs_level, clubs_value]
 clubs_vf = reduce(lambda  left,right: pd.merge(left,right,on=['league_name', 'club_name', 'year'], how='outer'), clubs_df)
 
+
+# leagues / clubs / players datasets with all characteristics (2021)
+game_characteristics = [
+       'potential',
+       'skill_moves', 'pace', 'shooting',
+       'passing', 'dribbling', 'defending', 'physic', 'gk_diving',
+       'gk_handling', 'gk_kicking', 'gk_reflexes', 'gk_speed',
+       'gk_positioning', 'attacking_crossing', 'attacking_finishing',
+       'attacking_heading_accuracy', 'attacking_short_passing',
+       'attacking_volleys', 'skill_dribbling', 'skill_curve',
+       'skill_fk_accuracy', 'skill_long_passing', 'skill_ball_control',
+       'movement_acceleration', 'movement_sprint_speed', 'movement_agility',
+       'movement_reactions', 'movement_balance', 'power_shot_power',
+       'power_jumping', 'power_stamina', 'power_strength', 'power_long_shots',
+       'mentality_aggression', 'mentality_interceptions',
+       'mentality_positioning', 'mentality_vision', 'mentality_penalties',
+       'mentality_composure', 'defending_marking', 'defending_standing_tackle',
+       'defending_sliding_tackle', 'goalkeeping_diving',
+       'goalkeeping_handling', 'goalkeeping_kicking',
+       'goalkeeping_positioning', 'goalkeeping_reflexes']
+
+db_21_characteristics_clubs = db_21[game_characteristics + ['club_name', 'league_name']].groupby(['league_name','club_name']).mean().reset_index()
