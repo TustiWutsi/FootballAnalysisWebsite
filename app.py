@@ -11,6 +11,9 @@ from FIFA_datasets import clubs_vf
 from FIFA_datasets import game_characteristics
 from FIFA_datasets import db_21_characteristics_clubs
 
+from clustering import strikers_num_scaled_and_transformed
+from clustering import labelling
+
 st.set_page_config(
             page_title="Bulk Football Insights",
             page_icon="⚽💡",
@@ -137,3 +140,17 @@ if analysis_choice == 'FIFA datasets analyses':
                                                     title= f'Ranking of selected clubs for {characteristic_choice_2}')
         fig_top_characteristics_cross_clubs.update_layout(yaxis_range=[round(db_21_characteristics_clubs[characteristic_choice_2].min()),round(db_21_characteristics_clubs[characteristic_choice_2].max())])
         st.plotly_chart(fig_top_characteristics_cross_clubs)
+
+if analysis_choice == 'Teams & Players Clustering':
+
+    clustering_choice = st.selectbox('Select the type of clustering you are interested in', ['Teams clustering', 'Players clustering'])
+
+    if clustering_choice == 'Players clustering':
+        
+        position_choice = st.radio('Select a position', ('Defenders', 'Midfielders', 'Strikers'))
+
+        if position_choice == 'Strikers':
+            fig_strikers_clusters = px.scatter_3d(strikers_num_scaled_and_transformed,x=0,y=1,z=2,color=labelling)
+            st.plotly_chart(fig_strikers_clusters)
+
+
