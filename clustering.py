@@ -28,3 +28,23 @@ strikers_num_scaled_and_transformed = pd.DataFrame(strikers_num_scaled_and_trans
 kmeans = KMeans(n_clusters = 6, max_iter=20)
 kmeans.fit(strikers_num_scaled_and_transformed)
 labelling = kmeans.labels_
+
+strikers_with_label = pd.concat([strikers,pd.Series(labelling)],axis=1).rename(columns={0:"player_cluster"}).dropna(subset=['short_name','player_cluster'])
+
+def strikers_details(cluster_number):
+    if cluster_number == 0:
+        return 'Quite technical / fast / Correct finisher / powerful physic / Aggressive'
+    if cluster_number == 1:
+        return 'Experiment strikers / low skills and low speed / Tall, heavy and powerful'
+    if cluster_number == 2:
+        return 'Top class striker / Very high skills / Finisher / High potential / Small but still quite powerful and fast'
+    if cluster_number == 3:
+        return 'Tall and powerful strikers / Young and speed / aggressive / low skills but good heading'
+    if cluster_number == 4:
+        return 'Very Strenghful / Good positionning / Correct technic but not fast / Correct finisher'
+    if cluster_number == 5:
+        return 'High skills / Potential / lack of strengh and physic / low heading and jump'
+
+strikers_with_label['cluster_description'] = strikers_with_label['player_cluster'].map(strikers_details)
+
+strikers_clusters = pd.read_csv('files/strikers_clusters.csv')

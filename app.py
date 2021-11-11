@@ -13,6 +13,8 @@ from FIFA_datasets import db_21_characteristics_clubs
 
 from clustering import strikers_num_scaled_and_transformed
 from clustering import labelling
+from clustering import strikers_with_label
+from clustering import strikers_clusters
 
 st.set_page_config(
             page_title="Bulk Football Insights",
@@ -39,6 +41,7 @@ st.sidebar.markdown("""
 df_analysis = pd.DataFrame({'first column': ['Choose a type of analysis', 'FIFA datasets analyses', 'Teams & Players Clustering', 'Games Stats & Prediction', 'Pitch Data analyses']})
 analysis_choice = st.sidebar.selectbox('Go to', df_analysis['first column'])
 
+### FIFA DATASETS ANALYSES ###
 if analysis_choice == 'FIFA datasets analyses':
 
     df_dimension = pd.DataFrame({'first column': ['Select a dimension of analysis', 'Leagues', 'Clubs', 'Players']})
@@ -141,6 +144,8 @@ if analysis_choice == 'FIFA datasets analyses':
         fig_top_characteristics_cross_clubs.update_layout(yaxis_range=[round(db_21_characteristics_clubs[characteristic_choice_2].min()),round(db_21_characteristics_clubs[characteristic_choice_2].max())])
         st.plotly_chart(fig_top_characteristics_cross_clubs)
 
+
+### CLUSTERING ###
 if analysis_choice == 'Teams & Players Clustering':
 
     clustering_choice = st.selectbox('Select the type of clustering you are interested in', ['Teams clustering', 'Players clustering'])
@@ -150,7 +155,21 @@ if analysis_choice == 'Teams & Players Clustering':
         position_choice = st.radio('Select a position', ('Defenders', 'Midfielders', 'Strikers'))
 
         if position_choice == 'Strikers':
-            fig_strikers_clusters = px.scatter_3d(strikers_num_scaled_and_transformed,x=0,y=1,z=2,color=labelling)
-            st.plotly_chart(fig_strikers_clusters)
+            player_selection = st.selectbox('Choose a player', strikers_clusters['short_name'].unique())
+
+            selected_player_cluster = pd.DataFrame(strikers_clusters[strikers_clusters['short_name'] == player_selection].label).iloc[0,0]
+            selected_player_description = pd.DataFrame(strikers_clusters[strikers_clusters['short_name'] == player_selection].cluster_description).iloc[0,0]
+
+            st.markdown(f'{player_selection} belongs to cluster n°**{selected_player_cluster}** :')
+            st.markdown(f'*{selected_player_description}*')
+            st.markdown(f'Find below some players similar to {player_selection} : ')
+
+            #selected_value = st.slider('You can select a maximum player value', 0, 100000000, 100000000 )
+            selected_value = st.number_input('You can type a maximum player value to filter similar players')
 
 
+            st.write(strikers_clusters[(strikers_clusters['label'] == selected_player_cluster) & (strikers_clusters['value_eur'] < selected_value)][['short_name','value_eur']])
+
+            if st.button('click to vizualize strikers clusters'):
+                fig_strikers_clusters = px.scatter_3d(strikers_num_scaled_and_transformed,x=0,y=1,z=2,color=labelling)
+                st.plotly_chart(fig_strikers_clusters)
