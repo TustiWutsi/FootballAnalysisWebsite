@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 from FIFA_datasets import top_5
 from FIFA_datasets import clubs_value
@@ -15,6 +17,8 @@ from clustering import strikers_num_scaled_and_transformed
 from clustering import labelling
 from clustering import strikers_with_label
 from clustering import strikers_clusters
+from clustering import clubs_with_clusters
+from clustering import kms_clubs
 
 st.set_page_config(
             page_title="Bulk Football Insights",
@@ -148,7 +152,8 @@ if analysis_choice == 'FIFA datasets analyses':
 ### CLUSTERING ###
 if analysis_choice == 'Teams & Players Clustering':
 
-    clustering_choice = st.selectbox('Select the type of clustering you are interested in', ['Teams clustering', 'Players clustering'])
+    df_clustering = pd.DataFrame({'first column': ['Select an option', 'Teams clustering', 'Players clustering']})
+    clustering_choice = st.selectbox('What king of clustering analysis are you interested in ?', df_clustering['first column'])
 
     if clustering_choice == 'Players clustering':
         
@@ -173,3 +178,28 @@ if analysis_choice == 'Teams & Players Clustering':
             if st.button('click to vizualize strikers clusters'):
                 fig_strikers_clusters = px.scatter_3d(strikers_num_scaled_and_transformed,x=0,y=1,z=2,color=labelling)
                 st.plotly_chart(fig_strikers_clusters)
+
+    if clustering_choice == 'Teams clustering':
+        
+        df_club_selection = pd.DataFrame({'first_column' : ['Select a club'] + list(clubs_with_clusters['club_name'].unique())})
+        club_selection = st.selectbox('Which club are you interested in ?', df_club_selection['first_column'])
+
+        selected_club_cluster = pd.DataFrame(clubs_with_clusters[clubs_with_clusters['club_name'] == club_selection].club_cluster).iloc[0,0]
+
+        st.markdown(f'**{club_selection}** belongs to cluster n°**{selected_club_cluster}** :')
+        st.text("")
+        st.markdown(f'Find below some clubs similar to **{club_selection}** : ')
+
+        st.write(clubs_with_clusters[clubs_with_clusters['club_cluster'] == selected_club_cluster][['club_name']])
+        st.text("")
+        st.markdown(f'Find below the top 10 game characteristics associated to cluster n°**{selected_club_cluster}** : ')
+
+        fig, ax = plt.subplots(figsize=(14,6))
+        sns.barplot(x="Feature", y="Weight", data=pd.DataFrame(kms_clubs.feature_importances_[selected_club_cluster][:10], columns=["Feature", "Weight"]))
+        plt.xticks(rotation=-45, ha="left");
+        ax.tick_params(axis='both', which='major', labelsize=22)
+        plt.title(f'Highest Weight Features in Cluster {selected_club_cluster}', fontsize='xx-large')
+        plt.xlabel('Feature', fontsize=18)
+        plt.ylabel('Weight', fontsize=18)
+
+        st.pyplot(fig)

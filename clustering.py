@@ -5,6 +5,8 @@ from sklearn.cluster import KMeans
 
 from FIFA_datasets import db_21
 
+from kmeans_interp.kmeans_feature_imp import KMeansInterp
+
 ### PLAYERS CLUSTERING ###
 
 #Spliting players according to position
@@ -48,3 +50,38 @@ def strikers_details(cluster_number):
 strikers_with_label['cluster_description'] = strikers_with_label['player_cluster'].map(strikers_details)
 
 strikers_clusters = pd.read_csv('files/strikers_clusters.csv')
+
+### TEAMS CLUSTERING ###
+game_characteristics = ['club_name',
+       'potential',
+       'skill_moves', 'pace', 'shooting',
+       'passing', 'dribbling', 'defending', 'physic', 'attacking_crossing', 'attacking_finishing',
+       'attacking_heading_accuracy', 'attacking_short_passing',
+       'attacking_volleys', 'skill_dribbling', 'skill_curve',
+       'skill_fk_accuracy', 'skill_long_passing', 'skill_ball_control',
+       'movement_acceleration', 'movement_sprint_speed', 'movement_agility',
+       'movement_reactions', 'movement_balance', 'power_shot_power',
+       'power_jumping', 'power_stamina', 'power_strength', 'power_long_shots',
+       'mentality_aggression', 'mentality_interceptions',
+       'mentality_positioning', 'mentality_vision', 'mentality_penalties',
+       'mentality_composure', 'defending_standing_tackle',
+       'defending_sliding_tackle']
+
+db_21_clubs = db_21[game_characteristics].dropna().groupby('club_name').mean().reset_index()
+db_21_clubs_num = db_21_clubs.drop(columns=['club_name'])
+
+minmax_scaler = MinMaxScaler()
+db_21_clubs_num_scaled = minmax_scaler.fit_transform(db_21_clubs_num)
+db_21_clubs_num_minmax_scaled_df = pd.DataFrame(db_21_clubs_num_scaled,columns=db_21_clubs_num.columns)
+
+X = db_21_clubs_num_minmax_scaled_df
+
+kms_clubs = KMeansInterp(
+n_clusters=6,
+ordered_feature_names=X.columns.tolist(), 
+feature_importance_method='wcss_min', # or 'unsup2sup'
+).fit(X.values)
+
+labels = kms_clubs.labels_
+
+clubs_with_clusters = pd.concat([db_21_clubs,pd.DataFrame(labels)],axis=1).rename(columns={0:"club_cluster"})
