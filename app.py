@@ -20,6 +20,10 @@ from clustering import strikers_clusters
 from clustering import clubs_with_clusters
 from clustering import kms_clubs
 
+from pitch_analysis import world_cup_games
+
+from mplsoccer import Pitch
+
 st.set_page_config(
             page_title="Bulk Football Insights",
             page_icon="⚽💡",
@@ -203,3 +207,9 @@ if analysis_choice == 'Teams & Players Clustering':
         plt.ylabel('Weight', fontsize=18)
 
         st.pyplot(fig)
+
+### PITCH DATA ANALYSES ###
+if analysis_choice == 'Pitch Data analyses':
+    df_game_pitch_selection = pd.DataFrame({'first_column' : ['Select a game'] + list(world_cup_games['game'].unique())})
+    game_pitch_selection = st.selectbox('In which World Cup 2018 game are you interested in ?', df_game_pitch_selection['first_column'])
+

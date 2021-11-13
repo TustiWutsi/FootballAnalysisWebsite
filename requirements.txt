@@ -1,3 +1,4 @@
 streamlit
 plotly.express
 scikit-learn~=0.24.2
+seaborn
