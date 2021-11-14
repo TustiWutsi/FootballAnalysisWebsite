@@ -8,7 +8,6 @@ from mplsoccer.statsbomb import read_event, EVENT_SLUG
 
 from mplsoccer.utils import FontManager
 import matplotlib.pyplot as plt
-from statsbombpy import sb
 import numpy as np
 from matplotlib import cm
 from matplotlib.colors import ListedColormap
