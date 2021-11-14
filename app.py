@@ -32,6 +32,7 @@ from mplsoccer.cm import create_transparent_cmap
 from mplsoccer.scatterutils import arrowhead_marker
 from mplsoccer.statsbomb import read_event, EVENT_SLUG
 from mplsoccer.utils import FontManager
+from statsbombpy import sb
 
 st.set_page_config(
             page_title="Bulk Football Insights",
