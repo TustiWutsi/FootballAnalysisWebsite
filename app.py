@@ -1,8 +1,12 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import plotly.express as px
 import seaborn as sns
 import matplotlib.pyplot as plt
+from matplotlib import cm
+from matplotlib.colors import ListedColormap
+import numpy as np
 
 from FIFA_datasets import top_5
 from FIFA_datasets import clubs_value
@@ -22,7 +26,13 @@ from clustering import kms_clubs
 
 from pitch_analysis import world_cup_games
 
-from mplsoccer import Pitch
+from mplsoccer.statsbomb import read_event, EVENT_SLUG
+from mplsoccer import Pitch, VerticalPitch
+from mplsoccer.cm import create_transparent_cmap
+from mplsoccer.scatterutils import arrowhead_marker
+from mplsoccer.statsbomb import read_event, EVENT_SLUG
+from mplsoccer.utils import FontManager
+from statsbombpy import sb
 
 st.set_page_config(
             page_title="Bulk Football Insights",
@@ -210,6 +220,75 @@ if analysis_choice == 'Teams & Players Clustering':
 
 ### PITCH DATA ANALYSES ###
 if analysis_choice == 'Pitch Data analyses':
+    
     df_game_pitch_selection = pd.DataFrame({'first_column' : ['Select a game'] + list(world_cup_games['game'].unique())})
     game_pitch_selection = st.selectbox('In which World Cup 2018 game are you interested in ?', df_game_pitch_selection['first_column'])
 
+    selected_game_id = pd.DataFrame(world_cup_games[world_cup_games['game'] == game_pitch_selection].match_id).iloc[0,0]
+
+    kwargs = {'related_event_df': False, 'shot_freeze_frame_df': False,'tactics_lineup_df': False, 'warn': False}
+    df = read_event(f'{EVENT_SLUG}/{selected_game_id}.json', **kwargs)['event'] 
+
+    home_team = pd.DataFrame(world_cup_games[world_cup_games['match_id'] == selected_game_id].home_team).iloc[0,0]
+    away_team = pd.DataFrame(world_cup_games[world_cup_games['match_id'] == selected_game_id].away_team).iloc[0,0]
+
+    team_pitch = st.radio('Select a team', df.team_name.unique())
+
+    df_shots = df[(df.type_name == 'Shot') & (df.team_name == team_pitch)].copy()
+    
+    df_pass = df[(df.type_name == 'Pass') &
+                   (df.team_name == team_pitch) &
+                   (~df.sub_type_name.isin(['Throw-in', 'Corner', 'Free Kick', 'Kick Off']))].copy()
+
+    fm_rubik = FontManager(('https://github.com/google/fonts/blob/main/ofl/rubikmonoone/'
+                        'RubikMonoOne-Regular.ttf?raw=true'))
+    
+
+    # filter goals / non-shot goals
+    df_goals = df_shots[df_shots.outcome_name == 'Goal'].copy()
+    df_non_goal_shots = df_shots[df_shots.outcome_name != 'Goal'].copy()
+
+    # Preparing player name and expecting goals for labels
+    players_name = list(df_shots['player_name'])
+    xg = list(round(df_shots['shot_statsbomb_xg'], 2))
+
+    pitch = Pitch()
+
+    fig, ax = pitch.draw(figsize=(20, 15))
+
+    # plot non-goal shots with hatch
+    sc1 = pitch.scatter(df_non_goal_shots.x, df_non_goal_shots.y,
+                        # size varies between 100 and 1900 (points squared)
+                        s=(df_non_goal_shots.shot_statsbomb_xg * 1900) + 100,
+                        edgecolors='#b94b75',  # give the markers a charcoal border
+                        c='None',  # no facecolor for the markers
+                        hatch='///',  # the all important hatch (triple diagonal lines)
+                        # for other markers types see: https://matplotlib.org/api/markers_api.html
+                        marker='o',
+                        ax=ax)
+
+    # plot goal shots with a football marker
+    # 'edgecolors' sets the color of the pentagons and edges, 'c' sets the color of the hexagons
+    sc2 = pitch.scatter(df_goals.x, df_goals.y,
+                        # size varies between 100 and 1900 (points squared)
+                        s=(df_goals.shot_statsbomb_xg * 1900) + 100,
+                        edgecolors='#b94b75',
+                        linewidth=0.6,
+                        c='white',
+                        marker='football',
+                        ax=ax)
+
+    txt = ax.text(x=50, y=40, s=f'{home_team} shots\nversus {away_team}',
+                size=40,
+                # here i am using a downloaded font from google fonts instead of passing a fontdict
+                fontproperties=fm_rubik.prop, color=pitch.line_color,
+                va='center', ha='center')
+
+    for i, txt in enumerate(list(zip(players_name, xg))):
+        ax.annotate(f'    {txt}', (list(df_shots.x)[i], list(df_shots.y)[i]), fontsize=15)
+        
+    st.pyplot(fig)
+
+    col1, col2 = st.columns(2)
+    col1.metric(f'{home_team} total xG', df[df['team_name'] == home_team]['shot_statsbomb_xg'].sum())
+    col2.metric(f'{away_team} total xG', df[df['team_name'] == away_team]['shot_statsbomb_xg'].sum())
