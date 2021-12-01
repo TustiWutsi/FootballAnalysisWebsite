@@ -1,5 +1,8 @@
 import pandas as pd
 from functools import reduce
+import plotly.express as px
+import plotly.graph_objects as go
+import streamlit as st
 
 def convert_position(position):
     if position in ['RB', 'RWB', 'LB', 'LWB','CB', 'RCB', 'LCB']:
@@ -260,3 +263,35 @@ game_characteristics = [
        'goalkeeping_positioning', 'goalkeeping_reflexes']
 
 db_21_characteristics_clubs = db_21[game_characteristics + ['club_name', 'league_name']].groupby(['league_name','club_name']).mean().reset_index()
+
+#function for radar plot
+def radar_plot(categories, clubs):
+    
+    fig = go.Figure()
+    
+    for i in range(len(clubs)):
+        fig.add_trace(go.Scatterpolar(
+              r=[int(db_21_characteristics_clubs[db_21_characteristics_clubs['club_name'] == clubs[i]][categories[x]]) for x in range(len(categories))],
+              theta=categories,
+              fill='toself',
+              name=clubs[i]
+        ))
+    
+    fig.update_layout(
+      polar=dict(
+        radialaxis=dict(
+          visible=True,
+          range=[30, 90]
+        )),
+      showlegend=True
+    )
+    
+    st.plotly_chart(fig)
+
+#function for bar plot
+def bar_plot(categories, clubs):
+    
+    fig = go.Figure(data=[go.Bar(name=clubs[i], x=categories, y=[int(db_21_characteristics_clubs[db_21_characteristics_clubs['club_name'] == clubs[i]][categories[x]]) for x in range(len(categories))]) for i in range(len(clubs))])
+        
+    fig.update_layout(barmode='group')
+    st.plotly_chart(fig)
