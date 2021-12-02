@@ -13,8 +13,10 @@ from FIFA_datasets import top_5
 from FIFA_datasets import clubs_value
 from FIFA_datasets import best_evol_champ
 from FIFA_datasets import map_df
+from FIFA_datasets import clubs
 from FIFA_datasets import clubs_level
 from FIFA_datasets import clubs_vf
+from FIFA_datasets import increase_clubs_plot
 from FIFA_datasets import game_characteristics
 from FIFA_datasets import db_21_characteristics_clubs
 from FIFA_datasets import radar_plot
@@ -127,11 +129,6 @@ if analysis_choice == 'FIFA datasets analyses':
         fig_top_characteristics_intra_clubs.update_layout(yaxis_range=[round(db_21_characteristics_clubs[characteristic_choice].min()),round(db_21_characteristics_clubs[characteristic_choice].max())])
         st.plotly_chart(fig_top_characteristics_intra_clubs)
 
-        #col1, col2, col3 = st.columns(3)
-        #col1.metric("SPDR S&P 500", "$437.8", "-$1.25")
-        #col2.metric("FTEC", "$121.10", "0.46%")
-        #col3.metric("BTC", "$46,583.91", "+4.87%")
-
         st.header('''Specific clubs focus''')
 
         teams_to_compare = st.multiselect('Pick your teams', clubs_vf['club_name'].unique())
@@ -165,6 +162,12 @@ if analysis_choice == 'FIFA datasets analyses':
         st.markdown('3) You can also compare game attributes with a radar viz :')
         radar_plot(characteristic_choice_2, teams_to_compare)
 
+        st.text("")
+        st.markdown('4) Have a look to the clubs that have most improved in last years :')
+        level_or_value_3 = st.radio('Choose the focus you are interested in', ('Teams Level', 'Teams Value'))
+        top_number = st.slider('Select the number of teams', 1, 30, 10)
+
+        increase_clubs_plot(level_or_value_3, top_number)
 
 ### CLUSTERING ###
 if analysis_choice == 'Teams & Players Clustering':
@@ -340,103 +343,3 @@ if analysis_choice == 'Pitch Data analyses':
     labeltitle=["time","actiontype","player","team"],
     zoom=False
     )
-
-    #Pass network
-    #raw_events = get_events(match_id=selected_game_id)
-    #lineups = raw_events[0:2]
-#
-    #if lineups[0]['team']['name'] == team_pitch:
-    #    team_lineup = lineups[0]
-    #else:
-    #    team_lineup = lineups[1]
-#
-    #team_id = team_lineup['team']['id'] 
-#
-    #starters = {p['player']['id']: {"name": p['player']['name'],
-    #                            "jersey": p['jersey_number']} for p in team_lineup['tactics']['lineup']}
-#
-    #events = [e for e in raw_events if e['team']['id'] == team_id]
-    #passes = [e for e in raw_events if 'pass' in e.keys()]
-#
-    #matrix = {}
-    #for p in passes:
-    #    if 'outcome' not in p['pass'].keys():
-    #        passer_id = p['player']['id']
-    #        recipient_id = p['pass']['recipient']['id']
-    #        
-    #        a, b = sorted([passer_id, recipient_id]) # <-- Note
-    #        
-    #        if a not in matrix.keys():
-    #            matrix[a] = {}
-    #            
-    #        if b not in matrix[a].keys():
-    #            matrix[a][b] = 0
-    #            
-    #            matrix[a][b] += 1 
-#
-    #positions = {}
-    #for e in events:
-    #    
-    #    if 'player' in e.keys():
-    #        player_id = e['player']['id']
-    #        if player_id not in positions.keys():
-    #            positions[player_id] = {"x":[], "y":[]}
-    #            
-    #        if 'location' in e.keys():
-    #            positions[player_id]['x'].append(e['location'][0])
-    #            positions[player_id]['y'].append(80-e['location'][1])
-    #            
-    #avg_positions = {k:[np.mean(v['x']),np.mean(v['y'])] for k, v in positions.items() if k in starters.keys()}
-#
-    #lines = []
-    #weights = []
-    #for k, v in matrix.items():
-    #    if k in starters.keys():
-    #        origin = avg_positions[k]
-    #        for k_, v_ in matrix[k].items():
-    #            if k_ in starters.keys():
-    #                dest = avg_positions[k_]
-    #                lines.append([*origin, *dest])
-    #                weights.append(v_)                             
-#
-    #fig, ax = plt.subplots(figsize=(20, 12))
-    #ax.set_aspect(1)
-    #pitch_pass = Pitch(title=f"{team_pitch} Pass Network")
-    #pitch_pass.create_pitch(ax)
-#
-    #fill_adj = lambda x: 0.8 / (1 + np.exp(-(x-20)*0.2))
-    #weight_adj = lambda x: 2 / (1 + np.exp(-(x-10)*0.2))
-#
-    #for i, e in enumerate(lines):
-    #    
-    #    cosmetics = {
-    #        'width': weight_adj(weights[i]),
-    #        'head_width': 0,
-    #        'head_length': 0,
-    #        'facecolor': (0, 0, 1, fill_adj(weights[i])),
-    #        'edgecolor': (0, 0, 0, 0)
-    #    }
-    #    if weights[i] > 5:
-    #        pitch_pass.draw_lines(ax, [e], cosmetics=cosmetics)
-#
-    #cosmetics = {
-    #    'linewidth': 2,
-    #    'facecolor': (0, 0, 1, 1),
-    #    'edgecolor': (0, 0, 0, 1),
-    #    'radius': 1.5
-    #}
-    #pitch_pass.draw_points(ax, [xy for k, xy in avg_positions.items()], cosmetics=cosmetics)
-#
-    #for k, v in avg_positions.items():
-    #    jersey = starters[k]['jersey']
-    #    x,y = v
-    #    
-    #    ax.text(pitch_pass.x_adj(x), pitch_pass.y_adj(y),
-    #            jersey, fontsize=12,
-    #            ha='center', va='center',
-    #            color='white')
-#
-    #plt.ylim(pitch_pass.ylim)
-    #plt.xlim(pitch_pass.xlim)
-    #plt.axis('off')
-    #st.pyplot(fig)

@@ -17,7 +17,6 @@ from matplotlib import cm
 from matplotlib.colors import ListedColormap
 from matplotlib.patches import Arc
 
-from soccerutils.statsbomb import get_events
 
 ### Shot map ###
 world_cup_games = pd.read_csv('files/world_cup_games.csv')

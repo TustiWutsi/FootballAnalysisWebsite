@@ -217,12 +217,14 @@ clubs_all_years = [club_level_15, club_level_16, club_level_17, club_level_18, c
 clubs = reduce(lambda  left,right: pd.merge(left,right,on=['league_name','club_name'],
                                             how='outer'), clubs_all_years)
 
-#clubs level 
+
+#Change format of value column
 column_value = ['value_eur_15','value_eur_16','value_eur_17','value_eur_18','value_eur_19','value_eur_20', 'value_eur_21']
 
-for i in column_value:
-    clubs[i] = clubs.apply(lambda x: "{:,}".format(x[i]), axis=1)
+#for i in column_value:
+#    clubs[i] = clubs.apply(lambda x: "{:,}".format(x[i]), axis=1)
 
+#clubs level
 clubs_level = clubs.drop(columns=column_value)
 clubs_level = clubs_level.rename(columns = {'overall_15' : 2015, 'overall_16' : 2016, 'overall_17' : 2017, 'overall_18' : 2018, 'overall_19' : 2019, 'overall_20' : 2020, 'overall_21' : 2021})
 clubs_level = clubs_level.melt(['league_name','club_name'], var_name='year').rename(columns = {'value':'team_level'})
@@ -234,13 +236,30 @@ clubs_value = clubs.drop(columns=column_overall)
 clubs_value = clubs_value.rename(columns = {'value_eur_15' : 2015, 'value_eur_16' : 2016, 'value_eur_17' : 2017, 'value_eur_18' : 2018, 'value_eur_19' : 2019, 'value_eur_20' : 2020, 'value_eur_21' : 2021})
 clubs_value = clubs_value.melt(['league_name','club_name'], var_name='year').rename(columns = {'value':'team_value'})
 
-#clubs wages
-#TO BE ADDED
-
 #gathering clubs level and value datasets
 clubs_df = [clubs_level, clubs_value]
 clubs_vf = reduce(lambda  left,right: pd.merge(left,right,on=['league_name', 'club_name', 'year'], how='outer'), clubs_df)
 
+#Clubs best level/value increase and decrease
+clubs = clubs.rename(columns={'overall_21':'team_level_2021'})
+clubs['minimum_level'] = clubs.loc[:, ['overall_15', 'overall_16', 'overall_17', 'overall_18', 'overall_19', 'overall_20']].min(axis=1)
+clubs['level_increase'] = round(clubs['team_level_2021'] - clubs['minimum_level'],1)
+clubs['maximum_level'] = clubs.loc[:, ['overall_15', 'overall_16', 'overall_17', 'overall_18', 'overall_19', 'overall_20']].max(axis=1)
+clubs['level_decrease'] = round(clubs['team_level_2021'] - clubs['maximum_level'],1)
+
+clubs = clubs.rename(columns={'value_eur_21':'team_value_2021'})
+clubs['minimum_value'] = clubs.loc[:, ['value_eur_15', 'value_eur_16', 'value_eur_17', 'value_eur_18', 'value_eur_19', 'value_eur_20']].min(axis=1)
+clubs['value_increase'] = round(clubs['team_value_2021'] - clubs['minimum_value'],1)
+clubs['maximum_value'] = clubs.loc[:, ['value_eur_15', 'value_eur_16', 'value_eur_17', 'value_eur_18', 'value_eur_19', 'value_eur_20']].max(axis=1)
+clubs['value_decrease'] = round(clubs['team_value_2021'] - clubs['maximum_value'],1)
+
+def increase_clubs_plot(interest, number_of_teams):
+    if interest == "Teams Level":
+        fig = px.bar(clubs.sort_values('level_increase', ascending=False).head(number_of_teams), x='club_name', y='level_increase', color='team_level_2021', hover_data=['club_name', 'league_name', 'team_level_2021','minimum_level'])
+        st.plotly_chart(fig)
+    else:
+        fig = px.bar(clubs.sort_values('value_increase', ascending=False).head(number_of_teams), x='club_name', y='value_increase', color='team_value_2021', hover_data=['club_name', 'league_name', 'team_value_2021','minimum_value'])
+        st.plotly_chart(fig)
 
 # leagues / clubs / players datasets with all characteristics (2021)
 game_characteristics = [
