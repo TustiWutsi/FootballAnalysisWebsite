@@ -17,6 +17,7 @@ from FIFA_datasets import clubs
 from FIFA_datasets import clubs_level
 from FIFA_datasets import clubs_vf
 from FIFA_datasets import increase_clubs_plot
+from FIFA_datasets import decrease_clubs_plot
 from FIFA_datasets import game_characteristics
 from FIFA_datasets import db_21_characteristics_clubs
 from FIFA_datasets import radar_plot
@@ -163,11 +164,14 @@ if analysis_choice == 'FIFA datasets analyses':
         radar_plot(characteristic_choice_2, teams_to_compare)
 
         st.text("")
-        st.markdown('4) Have a look to the clubs that have most improved in last years :')
+        st.markdown('4) Have a look to the clubs that have most improved/declined in last years :')
         level_or_value_3 = st.radio('Choose the focus you are interested in', ('Teams Level', 'Teams Value'))
         top_number = st.slider('Select the number of teams', 1, 30, 10)
 
         increase_clubs_plot(level_or_value_3, top_number)
+
+        st.text("")
+        decrease_clubs_plot(level_or_value_3, top_number)
 
 ### CLUSTERING ###
 if analysis_choice == 'Teams & Players Clustering':

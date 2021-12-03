@@ -261,6 +261,14 @@ def increase_clubs_plot(interest, number_of_teams):
         fig = px.bar(clubs.sort_values('value_increase', ascending=False).head(number_of_teams), x='club_name', y='value_increase', color='team_value_2021', hover_data=['club_name', 'league_name', 'team_value_2021','minimum_value'])
         st.plotly_chart(fig)
 
+def decrease_clubs_plot(interest, number_of_teams):
+    if interest == "Teams Level":
+        fig = px.bar(clubs.sort_values('level_decrease', ascending=True).head(number_of_teams), x='club_name', y='level_decrease', color='team_level_2021', hover_data=['club_name', 'league_name', 'team_level_2021','maximum_level'])
+        st.plotly_chart(fig)
+    else:
+        fig = px.bar(clubs.sort_values('value_decrease', ascending=True).head(number_of_teams), x='club_name', y='value_decrease', color='team_value_2021', hover_data=['club_name', 'league_name', 'team_value_2021','maximum_value'])
+        st.plotly_chart(fig)
+
 # leagues / clubs / players datasets with all characteristics (2021)
 game_characteristics = [
        'potential',
