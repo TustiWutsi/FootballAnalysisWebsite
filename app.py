@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from matplotlib.colors import ListedColormap
 import numpy as np
+import time
 
 from FIFA_datasets import top_5
 from FIFA_datasets import clubs_value
@@ -29,6 +30,12 @@ from clustering import strikers_with_label
 from clustering import strikers_clusters
 from clustering import clubs_with_clusters
 from clustering import kms_clubs
+from clustering import db_22_vf
+from clustering import game_characteristics_22
+from clustering import game_characteristics_22_gk
+from clustering import minmax_pca
+from clustering import elbow_chart
+from clustering import cluster_viz
 
 from pitch_analysis import world_cup_games
 from pitch_analysis import goal_number
@@ -181,27 +188,54 @@ if analysis_choice == 'Teams & Players Clustering':
 
     if clustering_choice == 'Players clustering':
         
-        position_choice = st.radio('Select a position', ('Defenders', 'Midfielders', 'Strikers'))
+        #position_choice = st.radio('Select a position', ('Defenders', 'Midfielders', 'Strikers'))
 
-        if position_choice == 'Strikers':
-            player_selection = st.selectbox('Choose a player', strikers_clusters['short_name'].unique())
+        #if position_choice == 'Strikers':
+            #player_selection = st.selectbox('Choose a player', strikers_clusters['short_name'].unique())
 
-            selected_player_cluster = pd.DataFrame(strikers_clusters[strikers_clusters['short_name'] == player_selection].label).iloc[0,0]
-            selected_player_description = pd.DataFrame(strikers_clusters[strikers_clusters['short_name'] == player_selection].cluster_description).iloc[0,0]
+            #selected_player_cluster = pd.DataFrame(strikers_clusters[strikers_clusters['short_name'] == player_selection].label).iloc[0,0]
+            #selected_player_description = pd.DataFrame(strikers_clusters[strikers_clusters['short_name'] == player_selection].cluster_description).iloc[0,0]
 
-            st.markdown(f'{player_selection} belongs to cluster n°**{selected_player_cluster}** :')
-            st.markdown(f'*{selected_player_description}*')
-            st.markdown(f'Find below some players similar to {player_selection} : ')
+            #st.markdown(f'{player_selection} belongs to cluster n°**{selected_player_cluster}** :')
+            #st.markdown(f'*{selected_player_description}*')
+            #st.markdown(f'Find below some players similar to {player_selection} : ')
 
             #selected_value = st.slider('You can select a maximum player value', 0, 100000000, 100000000 )
-            selected_value = st.number_input('You can type a maximum player value to filter similar players')
+            #selected_value = st.number_input('You can type a maximum player value to filter similar players')
 
 
-            st.write(strikers_clusters[(strikers_clusters['label'] == selected_player_cluster) & (strikers_clusters['value_eur'] < selected_value)][['short_name','value_eur']])
+            #st.write(strikers_clusters[(strikers_clusters['label'] == selected_player_cluster) & (strikers_clusters['value_eur'] < selected_value)][['short_name','value_eur']])
 
-            if st.button('click to vizualize strikers clusters'):
-                fig_strikers_clusters = px.scatter_3d(strikers_num_scaled_and_transformed,x=0,y=1,z=2,color=labelling)
-                st.plotly_chart(fig_strikers_clusters)
+            #if st.button('click to vizualize strikers clusters'):
+                #fig_strikers_clusters = px.scatter_3d(strikers_num_scaled_and_transformed,x=0,y=1,z=2,color=labelling)
+                #st.plotly_chart(fig_strikers_clusters)
+        st.text("")
+        st.markdown('1) First, select a position you are interested in')
+        position_selected = st.selectbox('Choose a position', db_22_vf['club_position'].unique())
+        
+        st.text("")
+        st.markdown('2) Then, choose the most appropriate number of clusters according to the chart below, following the elbow method')
+        df_position_selected = db_22_vf[db_22_vf['club_position'] == position_selected]
+        if position_selected == 'GK':
+            df_position_selected_2 = db_22_vf[db_22_vf['club_position'] == position_selected][game_characteristics_22_gk]
+        else:
+            df_position_selected_2 = db_22_vf[db_22_vf['club_position'] == position_selected][game_characteristics_22]
+
+        df_scaled_transformed = minmax_pca(df_position_selected_2)
+        elbow_chart(df_scaled_transformed)
+        number = st.number_input('Insert the chosen number of clusters')
+
+        st.text("")
+        st.markdown('3) Now, launch the training of the model (Kmeans) and visualize your clusters')
+        if st.checkbox('Launch training'):
+            latest_iteration = st.empty()
+            bar = st.progress(0)
+            for i in range(10):
+                latest_iteration.text(f'Iteration {i+1}')
+                bar.progress(i + 1)
+                time.sleep(0.1)
+            cluster_chart = cluster_viz(number, df_scaled_transformed)
+
 
     if clustering_choice == 'Teams clustering':
         

@@ -1,4 +1,6 @@
+import streamlit as st
 import pandas as pd
+import plotly.express as px
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
@@ -85,3 +87,118 @@ feature_importance_method='wcss_min', # or 'unsup2sup'
 labels = kms_clubs.labels_
 
 clubs_with_clusters = pd.concat([db_21_clubs,pd.DataFrame(labels)],axis=1).rename(columns={0:"club_cluster"})
+
+### CLUSTERING V2 ###
+
+db_22 = pd.read_csv('files/players_22.csv')
+
+game_characteristics_22 = [
+'pace',
+'shooting',
+'passing',
+'dribbling',
+'defending',
+'physic',
+'attacking_crossing',
+'attacking_finishing',
+'attacking_heading_accuracy',
+'attacking_short_passing',
+'attacking_volleys',
+'skill_dribbling',
+'skill_curve',
+'skill_fk_accuracy',
+'skill_long_passing',
+'skill_ball_control',
+'movement_acceleration',
+'movement_sprint_speed',
+'movement_agility',
+'movement_reactions',
+'movement_balance',
+'power_shot_power',
+'power_jumping',
+'power_stamina',
+'power_strength',
+'power_long_shots',
+'mentality_aggression',
+'mentality_interceptions',
+'mentality_positioning',
+'mentality_vision',
+'mentality_penalties',
+'mentality_composure',
+'defending_marking_awareness',
+'defending_standing_tackle',
+'defending_sliding_tackle',
+'goalkeeping_diving',
+'goalkeeping_handling',
+'goalkeeping_kicking',
+'goalkeeping_positioning',
+'goalkeeping_reflexes']
+
+game_characteristics_22_gk = [
+'attacking_crossing',
+'attacking_finishing',
+'attacking_heading_accuracy',
+'attacking_short_passing',
+'attacking_volleys',
+'skill_dribbling',
+'skill_curve',
+'skill_fk_accuracy',
+'skill_long_passing',
+'skill_ball_control',
+'movement_acceleration',
+'movement_sprint_speed',
+'movement_agility',
+'movement_reactions',
+'movement_balance',
+'power_shot_power',
+'power_jumping',
+'power_stamina',
+'power_strength',
+'power_long_shots',
+'mentality_aggression',
+'mentality_interceptions',
+'mentality_positioning',
+'mentality_vision',
+'mentality_penalties',
+'mentality_composure',
+'defending_marking_awareness',
+'defending_standing_tackle',
+'defending_sliding_tackle',
+'goalkeeping_diving',
+'goalkeeping_handling',
+'goalkeeping_kicking',
+'goalkeeping_positioning',
+'goalkeeping_reflexes',
+'goalkeeping_speed']
+
+positions_to_delete = ['SUB', 'RES', 'CF', 'LAM', 'RAM', 'LF', 'RF', 'nan']
+db_22_vf = db_22[db_22["club_position"].isin(positions_to_delete) == False]
+
+def minmax_pca(df):
+    minmax_scaler = MinMaxScaler()
+    scaled = minmax_scaler.fit_transform(df)
+    df_scaled = pd.DataFrame(scaled,columns=df.columns)
+
+    pca = PCA()
+    pca.fit(df_scaled)
+    df_scaled_and_transformed = pca.transform(df_scaled)
+    df_scaled_and_transformed = pd.DataFrame(df_scaled_and_transformed)
+    return df_scaled_and_transformed
+
+def elbow_chart(df):
+    inertias = []
+    ks = range(1,20)
+    for k in ks:
+        km_test = KMeans(n_clusters=k).fit(df)
+        inertias.append(km_test.inertia_)
+
+    fig = px.line(x=ks, y=inertias, title='Elbow method to determine the right number of clusters')
+    fig.update_layout(xaxis_title="Number of clusters", yaxis_title="Inertia")
+    st.plotly_chart(fig)
+
+def cluster_viz(nb_cluster, df):
+    kmeans = KMeans(n_clusters = nb_cluster, max_iter=20)
+    kmeans.fit(df)
+    labelling = kmeans.labels_
+    fig = px.scatter_3d(df,x=0,y=1,z=2,color=labelling)
+    st.plotly_chart(fig)
