@@ -177,16 +177,18 @@ game_characteristics_22_gk = [
 positions_to_delete = ['SUB', 'RES', 'CF', 'LAM', 'RAM', 'LF', 'RF', 'nan']
 db_22_vf = db_22[db_22["club_position"].isin(positions_to_delete) == False]
 
-def minmax_pca(df):
+def minmax(df):
     minmax_scaler = MinMaxScaler()
     scaled = minmax_scaler.fit_transform(df)
     df_scaled = pd.DataFrame(scaled,columns=df.columns)
+    return df_scaled
 
+def pca(df):
     pca = PCA()
-    pca.fit(df_scaled)
-    df_scaled_and_transformed = pca.transform(df_scaled)
-    df_scaled_and_transformed = pd.DataFrame(df_scaled_and_transformed)
-    return df_scaled_and_transformed
+    pca.fit(df)
+    transformed = pca.transform(df)
+    df_transformed = pd.DataFrame(transformed)
+    return df_transformed
 
 def elbow_chart(df):
     inertias = []
@@ -220,11 +222,15 @@ def interpret_clusters(nb_cluster, nb_features, df1, df2):
     for i in range(int(nb_cluster)):
         df_important_features = pd.DataFrame(kms.feature_importances_[i][:nb_features], columns=["Feature", "Weight"])
         fig.add_trace(go.Bar(x=df_important_features.Feature, y=df_important_features.Weight, name=f'cluster n°{i}'), row=1, col=i+1)
-    fig.update_layout(height=400, width=1000)
+    fig.update_layout(height=400, width=800)
     st.plotly_chart(fig)
 
     labels = pd.DataFrame(kms.labels_).rename(columns={0:"label"})
     df2_vf = df2.reset_index().drop(columns=['index'])
     df_with_label = pd.concat([df2_vf,labels],axis=1)
 
+    #df_important_features = pd.DataFrame(kms.feature_importances_[nb_cluster][:10], columns=["Feature", "Weight"])
+
     return df_with_label
+
+#def ten_features(df):

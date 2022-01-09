@@ -33,7 +33,8 @@ from clustering import kms_clubs
 from clustering import db_22_vf
 from clustering import game_characteristics_22
 from clustering import game_characteristics_22_gk
-from clustering import minmax_pca
+from clustering import minmax
+from clustering import pca
 from clustering import elbow_chart
 from clustering import cluster_viz
 from clustering import interpret_clusters
@@ -222,7 +223,8 @@ if analysis_choice == 'Teams & Players Clustering':
         else:
             df_position_selected_2 = db_22_vf[db_22_vf['club_position'] == position_selected][game_characteristics_22]
 
-        df_scaled_transformed = minmax_pca(df_position_selected_2)
+        df_scaled = minmax(df_position_selected_2)
+        df_scaled_transformed = pca(df_scaled)
         elbow_chart(df_scaled_transformed)
         cluster_number = st.number_input('Insert the chosen number of clusters')
 
@@ -232,16 +234,20 @@ if analysis_choice == 'Teams & Players Clustering':
             cluster_viz(cluster_number, df_scaled_transformed)
         if st.checkbox('Interpret clusters'):
             feature_number = st.slider('Select the number of most significative features for each cluster ', 1, 10, 5)
-            players_with_labels = interpret_clusters(cluster_number, feature_number, df_scaled_transformed, df_position_selected)
+            players_with_labels = interpret_clusters(cluster_number, feature_number, df_scaled, df_position_selected)
 
             st.text("")
             st.markdown('4) Select a player from this position to know to which cluster he belongs')
             player_selected_clustering = st.selectbox('Choose a player', players_with_labels['short_name'].unique())
             player_selected_cluster_number = pd.DataFrame(players_with_labels[players_with_labels['short_name'] == player_selected_clustering].label).iloc[0,0]
-
-            st.markdown(f'{player_selected_clustering} belongs to cluster n°**{player_selected_cluster_number}** :')
-            st.markdown(f'Find below some players similar to {player_selected_clustering} : ')
-            st.write(players_with_labels[players_with_labels['label'] == player_selected_cluster_number][['short_name', 'overall', 'value_eur']].sort_values('overall', ascending=False))
+            
+            col1, col2 = st.columns(2)
+            col1.image(pd.DataFrame(players_with_labels[players_with_labels['short_name'] == player_selected_clustering].player_face_url).iloc[0,0], width=200)
+            col2.text("")
+            col2.markdown(f'{player_selected_clustering} belongs to cluster n°**{player_selected_cluster_number}**')
+            st.text("")
+            st.markdown(f'Find below some players similar to {player_selected_clustering}, and the top 10 features that most defined this cluster ')
+            st.write(players_with_labels[players_with_labels['label'] == player_selected_cluster_number][['short_name', 'club_name', 'overall', 'value_eur']].sort_values('overall', ascending=False))
 
 
     if clustering_choice == 'Teams clustering':
