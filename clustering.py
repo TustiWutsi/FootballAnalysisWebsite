@@ -4,6 +4,9 @@ import plotly.express as px
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
+import time
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 from FIFA_datasets import db_21
 
@@ -192,13 +195,36 @@ def elbow_chart(df):
         km_test = KMeans(n_clusters=k).fit(df)
         inertias.append(km_test.inertia_)
 
-    fig = px.line(x=ks, y=inertias, title='Elbow method to determine the right number of clusters')
+    fig = px.line(x=ks, y=inertias)
     fig.update_layout(xaxis_title="Number of clusters", yaxis_title="Inertia")
     st.plotly_chart(fig)
 
 def cluster_viz(nb_cluster, df):
-    kmeans = KMeans(n_clusters = nb_cluster, max_iter=20)
+    with st.spinner('Wait for it...'):
+        time.sleep(5)
+    st.success('Done!')
+    kmeans = KMeans(n_clusters = int(nb_cluster), max_iter=20)
     kmeans.fit(df)
     labelling = kmeans.labels_
     fig = px.scatter_3d(df,x=0,y=1,z=2,color=labelling)
     st.plotly_chart(fig)
+
+def interpret_clusters(nb_cluster, nb_features, df1, df2):
+    kms = KMeansInterp(
+    n_clusters=int(nb_cluster),
+    ordered_feature_names=df1.columns.tolist(), 
+    feature_importance_method='wcss_min', # or 'unsup2sup'
+    ).fit(df1.values)
+
+    fig = make_subplots(rows=1, cols=int(nb_cluster), start_cell="bottom-left")
+    for i in range(int(nb_cluster)):
+        df_important_features = pd.DataFrame(kms.feature_importances_[i][:nb_features], columns=["Feature", "Weight"])
+        fig.add_trace(go.Bar(x=df_important_features.Feature, y=df_important_features.Weight, name=f'cluster n°{i}'), row=1, col=i+1)
+    fig.update_layout(height=400, width=1000)
+    st.plotly_chart(fig)
+
+    labels = pd.DataFrame(kms.labels_).rename(columns={0:"label"})
+    df2_vf = df2.reset_index().drop(columns=['index'])
+    df_with_label = pd.concat([df2_vf,labels],axis=1)
+
+    return df_with_label
