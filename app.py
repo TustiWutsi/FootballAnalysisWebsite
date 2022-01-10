@@ -10,6 +10,8 @@ from matplotlib.colors import ListedColormap
 import numpy as np
 import time
 
+from front import header
+
 from FIFA_datasets import top_5
 from FIFA_datasets import clubs_value
 from FIFA_datasets import best_evol_champ
@@ -185,32 +187,13 @@ if analysis_choice == 'FIFA datasets analyses':
 ### CLUSTERING ###
 if analysis_choice == 'Teams & Players Clustering':
 
+    header("In this part, you can highlight the main families/clusters of players for each position on the pitch, based on FIFA22 players' attributes. For a few positions, it will be hard for the model to identify other patterns than good vs bad players, but for most of them it is insightful !")
+    st.text("")
+
     df_clustering = pd.DataFrame({'first column': ['Select an option', 'Teams clustering', 'Players clustering']})
     clustering_choice = st.selectbox('What king of clustering analysis are you interested in ?', df_clustering['first column'])
 
     if clustering_choice == 'Players clustering':
-        
-        #position_choice = st.radio('Select a position', ('Defenders', 'Midfielders', 'Strikers'))
-
-        #if position_choice == 'Strikers':
-            #player_selection = st.selectbox('Choose a player', strikers_clusters['short_name'].unique())
-
-            #selected_player_cluster = pd.DataFrame(strikers_clusters[strikers_clusters['short_name'] == player_selection].label).iloc[0,0]
-            #selected_player_description = pd.DataFrame(strikers_clusters[strikers_clusters['short_name'] == player_selection].cluster_description).iloc[0,0]
-
-            #st.markdown(f'{player_selection} belongs to cluster n°**{selected_player_cluster}** :')
-            #st.markdown(f'*{selected_player_description}*')
-            #st.markdown(f'Find below some players similar to {player_selection} : ')
-
-            #selected_value = st.slider('You can select a maximum player value', 0, 100000000, 100000000 )
-            #selected_value = st.number_input('You can type a maximum player value to filter similar players')
-
-
-            #st.write(strikers_clusters[(strikers_clusters['label'] == selected_player_cluster) & (strikers_clusters['value_eur'] < selected_value)][['short_name','value_eur']])
-
-            #if st.button('click to vizualize strikers clusters'):
-                #fig_strikers_clusters = px.scatter_3d(strikers_num_scaled_and_transformed,x=0,y=1,z=2,color=labelling)
-                #st.plotly_chart(fig_strikers_clusters)
         st.text("")
         st.markdown('1) First, select a position you are interested in')
         position_selected = st.selectbox('Choose a position', db_22_vf['club_position'].unique())

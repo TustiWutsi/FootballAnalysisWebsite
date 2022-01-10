@@ -1,7 +1,13 @@
 streamlit
 plotly.express
+plotly.graph_objects
 scikit-learn~=0.24.2
 seaborn
 mplsoccer
 matplotlib
 requests==2.23.0
+mplsoccer.statsbomb
+mplsoccer
+mplsoccer.cm
+mplsoccer.scatterutils
+mplsoccer.utils
