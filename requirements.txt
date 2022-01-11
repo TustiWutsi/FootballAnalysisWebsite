@@ -6,4 +6,3 @@ seaborn
 mplsoccer==1.0.5
 matplotlib
 requests==2.23.0
-soccerutils
