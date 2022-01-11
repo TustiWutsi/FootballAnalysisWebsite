@@ -11,6 +11,7 @@ import numpy as np
 import time
 
 from front import header
+from front import in_progress
 
 from FIFA_datasets import top_5
 from FIFA_datasets import clubs_value
@@ -64,9 +65,9 @@ st.sidebar.markdown("""
                     
                     Here you will find :
                     - Some insights about leagues, clubs and players from FIFA datasets
-                    - Teams and players clustering
-                    - Past games statistics and future games predictions
-                    - Pitch data analysis
+                    - Players and teams clustering
+                    - Teams performance predictions
+                    - Event-data analyses
                     - ... \n
                     **In short, a brief overview of what we can do with open-source football data 📈🔎 !**
                     
@@ -74,16 +75,22 @@ st.sidebar.markdown("""
 
                     """)
 
-df_analysis = pd.DataFrame({'first column': ['Choose a type of analysis', 'FIFA datasets analyses', 'Teams & Players Clustering', 'Games Stats & Prediction', 'Pitch Data analyses']})
+df_analysis = pd.DataFrame({'first column': ['Choose a type of analysis', 'FIFA datasets analyses', 'Teams & players clustering', 'Teams performance prediction', 'Event-data vizualisations', 'Fans sentiment analysis']})
 analysis_choice = st.sidebar.selectbox('Go to', df_analysis['first column'])
 
 ### FIFA DATASETS ANALYSES ###
 if analysis_choice == 'FIFA datasets analyses':
 
+    header("This section contains basic data analyses with FIFA players datasets, from 2015 to 2021, at 3 levels : leagues, clubs and players. You will get insights about level/value evolution, most significative improvements/decreases, or also game attributes comparison")
+    st.text("")
+
     df_dimension = pd.DataFrame({'first column': ['Select a dimension of analysis', 'Leagues', 'Clubs', 'Players']})
     dimension_analysis = st.selectbox('Go to', df_dimension['first column'])
 
     if dimension_analysis == 'Leagues':
+        
+        in_progress()
+        st.text("")
 
         fig_map = px.scatter_geo(map_df, 
                                 lat="latitude",
@@ -184,8 +191,12 @@ if analysis_choice == 'FIFA datasets analyses':
         st.text("")
         decrease_clubs_plot(level_or_value_3, top_number)
 
+    if dimension_analysis == 'Players':
+        in_progress()
+        st.text("")
+
 ### CLUSTERING ###
-if analysis_choice == 'Teams & Players Clustering':
+if analysis_choice == 'Teams & players clustering':
 
     header("In this part, you can highlight the main families/clusters of players for each position on the pitch, based on FIFA22 players' attributes. For a few positions, it will be hard for the model to identify other patterns than good vs bad players, but for most of them it is insightful !")
     st.text("")
@@ -259,7 +270,10 @@ if analysis_choice == 'Teams & Players Clustering':
         st.pyplot(fig)
 
 ### PITCH DATA ANALYSES ###
-if analysis_choice == 'Pitch Data analyses':
+if analysis_choice == 'Event-data vizualisations':
+
+    header("You will find here a very quick overview of what can be done with football 'event-data' ( = action information and ball location(x,y) at each second of a game) for 2018 World Cup games. This open-data is provided by Statsbomb")
+    st.text("")
     
     #Game selection
     df_game_pitch_selection = pd.DataFrame({'first_column' : ['Select a game'] + list(world_cup_games['game'].unique())})
@@ -377,3 +391,11 @@ if analysis_choice == 'Pitch Data analyses':
     labeltitle=["time","actiontype","player","team"],
     zoom=False
     )
+
+### TEAMS PERFORMANCE PREDICTION
+if analysis_choice == 'Teams performance prediction':
+    in_progress()
+
+### FANS SENTIMENT ANALYSIS
+if analysis_choice == 'Fans sentiment analysis':
+    in_progress()
