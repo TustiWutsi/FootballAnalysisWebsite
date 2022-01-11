@@ -1,6 +1,6 @@
 streamlit
-plotly.express
-plotly.graph_objects
+plotly==5.4.0
+tenacity
 scikit-learn~=0.24.2
 seaborn
 mplsoccer
@@ -11,3 +11,4 @@ mplsoccer
 mplsoccer.cm
 mplsoccer.scatterutils
 mplsoccer.utils
+soccerutils
