@@ -3,12 +3,7 @@ plotly==5.4.0
 tenacity
 scikit-learn~=0.24.2
 seaborn
-mplsoccer
+mplsoccer==1.0.5
 matplotlib
 requests==2.23.0
-mplsoccer.statsbomb
-mplsoccer
-mplsoccer.cm
-mplsoccer.scatterutils
-mplsoccer.utils
 soccerutils
